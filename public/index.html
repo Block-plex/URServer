@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>UR Multiplayer Server</title>
+<style>
+body { background:#111; color:#eee; font-family:Arial; padding:20px; }
+#log { background:#222; padding:10px; height:300px; overflow-y:scroll; }
+input,button { padding:8px; margin:5px; }
+</style>
+</head>
+<body>
+
+<h1>UR Multiplayer Test</h1>
+
+<input id="name" placeholder="Your name">
+<button onclick="connect()">Connect</button>
+
+<div id="chatUI" style="display:none;">
+    <input id="msg" placeholder="Message">
+    <button onclick="sendChat()">Send</button>
+    <div id="log"></div>
+</div>
+
+<script>
+let ws;
+
+function connect() {
+    const name = document.getElementById("name").value;
+    ws = new WebSocket("wss://" + window.location.host);
+
+    ws.onopen = () => {
+        document.getElementById("chatUI").style.display = "block";
+        log("Connected as " + name);
+    };
+
+    ws.onmessage = (ev) => log(ev.data);
+}
+
+function sendChat() {
+    const text = document.getElementById("msg").value;
+    ws.send(JSON.stringify({ type:"chat", text }));
+}
+
+function log(t) {
+    const div = document.getElementById("log");
+    div.innerHTML += t + "<br>";
+    div.scrollTop = div.scrollHeight;
+}
+</script>
+
+</body>
+</html>
