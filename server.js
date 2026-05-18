@@ -1,58 +1,55 @@
 const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
-const dgram = require("dgram");
 
 const app = express();
 const server = http.createServer(app);
-
-// Serve /public folder
-app.use(express.static("public"));
-
-// WebSocket chat server
 const wss = new WebSocket.Server({ server });
 
+app.use(express.static("public"));
+
+const players = new Map(); // id -> { x, y, ws }
+
+function broadcast(obj) {
+  const data = JSON.stringify(obj);
+  wss.clients.forEach(c => {
+    if (c.readyState === WebSocket.OPEN) c.send(data);
+  });
+}
+
 wss.on("connection", (ws) => {
-    console.log("WS client connected");
+  console.log("WS client connected");
 
-    ws.on("message", (data) => {
-        let msg;
-        try { msg = JSON.parse(data); } catch { return; }
+  ws.on("message", (data) => {
+    let msg;
+    try { msg = JSON.parse(data); } catch { return; }
 
-        if (msg.type === "chat") {
-            const out = JSON.stringify({ type:"chat", text:msg.text });
-            wss.clients.forEach(c => {
-                if (c.readyState === WebSocket.OPEN) c.send(out);
-            });
-        }
-    });
-});
-
-// UDP movement server
-const udp = dgram.createSocket("udp4");
-const players = new Map();
-
-udp.on("message", (msg, rinfo) => {
-    const parts = msg.toString().split(" ");
-    if (parts[0] === "MOVE") {
-        const id = parts[1];
-        const x = parseFloat(parts[2]);
-        const y = parseFloat(parts[3]);
-
-        players.set(id, { x, y });
-
-        const snapshot = [];
-        for (const [pid, p] of players.entries()) {
-            snapshot.push(`${pid}:${p.x},${p.y}`);
-        }
-
-        udp.send(Buffer.from("STATE " + snapshot.join("|")), rinfo.port, rinfo.address);
+    if (msg.type === "chat") {
+      broadcast({ type: "chat", from: msg.from || "unknown", text: msg.text });
     }
+
+    if (msg.type === "move") {
+      const { id, x, y } = msg;
+      if (!id) return;
+      players.set(id, { x, y, ws });
+
+      // send full state to everyone
+      const state = {};
+      for (const [pid, p] of players.entries()) {
+        state[pid] = { x: p.x, y: p.y };
+      }
+      broadcast({ type: "state", players: state });
+    }
+  });
+
+  ws.on("close", () => {
+    // optional: remove player entries whose ws === this ws
+    for (const [id, p] of players.entries()) {
+      if (p.ws === ws) players.delete(id);
+    }
+    console.log("WS client disconnected");
+  });
 });
 
-// Ports
-const HTTP_PORT = process.env.PORT || 3000;
-const UDP_PORT = 40000;
-
-server.listen(HTTP_PORT, () => console.log("HTTP/WS on", HTTP_PORT));
-udp.bind(UDP_PORT, () => console.log("UDP on", UDP_PORT));
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log("HTTP/WS on", PORT));
