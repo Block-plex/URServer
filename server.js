@@ -6,6 +6,8 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+let seed = Math.floor(Math.random() * 5000000);
+
 app.use(express.static("public"));
 
 const players = new Map(); // id -> { x, y, ws }
@@ -19,6 +21,8 @@ function broadcast(obj) {
 
 wss.on("connection", (ws) => {
   console.log("WS client connected");
+
+  broadcast({ type: "seed", seed: seed});
 
   ws.on("message", (data) => {
     let msg;
