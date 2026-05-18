@@ -38,6 +38,7 @@ wss.on("connection", (ws) => {
       for (const [pid, p] of players.entries()) {
         state[pid] = { x: p.x, y: p.y };
       }
+      console.log("type:state ", state);
       broadcast({ type: "state", players: state });
     }
   });
