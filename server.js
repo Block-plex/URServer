@@ -8,6 +8,8 @@ const wss = new WebSocket.Server({ server });
 
 let seed = Math.floor(Math.random() * 5000000);
 
+let forumMessages = [];
+
 app.use(express.static("public"));
 
 const players = new Map(); // id -> { x, y, ws }
@@ -21,6 +23,10 @@ function broadcast(obj) {
 
 wss.on("connection", (ws) => {
   console.log("WS client connected");
+
+  for (let i = 0; i < forumMessages.length; i++) {
+    ws.send(JSON.stringify(forumMessages[i]));
+  }
 
   broadcast({ type: "seed", seed: seed});
 
@@ -47,6 +53,7 @@ wss.on("connection", (ws) => {
     }
     if(msg.type === "forum") {
       console.log("Forum message:", msg.text);
+      forumMessages.push({ from: msg.from || "unknown", text: msg.text });
       broadcast({ type: "forum", from: msg.from || "unknown", text: msg.text });
     }
   });
