@@ -15,7 +15,7 @@ input,button { padding:8px; margin:5px; }
 <input id="name" placeholder="Your name">
 <button onclick="connect()">Connect</button>
 
-<button>Download Game (wip)</button>
+<button onclick="clearForums()">Clear forums</button>
 
 <div id="chatUI" style="display:none;">
     <input id="msg" placeholder="Message">
@@ -47,6 +47,11 @@ function log(t) {
     const div = document.getElementById("log");
     div.innerHTML += t + "<br>";
     div.scrollTop = div.scrollHeight;
+}
+
+function clearForums() {
+    forumMessages = [];
+    document.getElementById("log").innerHTML = "";
 }
 </script>
 
