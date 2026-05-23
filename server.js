@@ -45,6 +45,9 @@ wss.on("connection", (ws) => {
       }
       broadcast({ type: "state", players: state });
     }
+    if(msg.type === "forum") {
+      console.log("Forum message:", msg.text);
+    }
   });
 
   ws.on("close", () => {
