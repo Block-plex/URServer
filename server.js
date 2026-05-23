@@ -53,8 +53,26 @@ wss.on("connection", (ws) => {
     }
     if(msg.type === "forum") {
       console.log("Forum message:", msg.text);
-      forumMessages.push({ type: "forum", from: msg.from || "unknown", text: msg.text });
-      broadcast({ type: "forum", from: msg.from || "unknown", text: msg.text });
+      forumMessages.push({ type: "forum", from: msg.from || "unknown", text: msg.text, likes: 0, dislikes: 0 });
+      broadcast({ type: "forum", from: msg.from || "unknown", text: msg.text, likes: 0, dislikes: 0 });
+    }
+    if(msg.type === "like") {
+      for(let i = 0; i < forumMessages.length; i++) {
+        if(forumMessages[i].text === msg.text) {
+          forumMessages[i].likes++;
+          broadcast({ type: "like", count: forumMessages[i].likes, text: forumMessages[i].text });
+          break;
+        }
+      }
+    }
+    if(msg.type === "dislike") {
+      for(let i = 0; i < forumMessages.length; i++) {
+        if(forumMessages[i].text === msg.text) {
+          forumMessages[i].dislikes++;
+          broadcast({ type: "dislike", count: forumMessages[i].dislikes, text: forumMessages[i].text });
+          break;
+        }
+      }
     }
   });
 
