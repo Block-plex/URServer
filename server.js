@@ -27,6 +27,7 @@ wss.on("connection", (ws) => {
   ws.on("message", (data) => {
     let msg;
     try { msg = JSON.parse(data); } catch { return; }
+    console.log(msg);
 
     if (msg.type === "chat") {
       broadcast({ type: "chat", from: msg.from || "unknown", text: msg.text });
@@ -42,7 +43,6 @@ wss.on("connection", (ws) => {
       for (const [pid, p] of players.entries()) {
         state[pid] = { x: p.x, y: p.y };
       }
-      console.log("type:state ", state);
       broadcast({ type: "state", players: state });
     }
   });
