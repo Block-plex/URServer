@@ -53,7 +53,7 @@ wss.on("connection", (ws) => {
     }
     if(msg.type === "forum") {
       console.log("Forum message:", msg.text);
-      forumMessages.push({ from: msg.from || "unknown", text: msg.text });
+      forumMessages.push({ type: "forum", from: msg.from || "unknown", text: msg.text });
       broadcast({ type: "forum", from: msg.from || "unknown", text: msg.text });
     }
   });
