@@ -2,6 +2,44 @@ const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
 
+import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+
+const s3 = new S3Client({
+    region: "auto",
+    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+        accessKeyId: process.env.R2_ACCESS_KEY,
+        secretAccessKey: process.env.R2_SECRET_KEY
+    }
+});
+
+const BUCKET = process.env.R2_BUCKET;
+
+export async function testUpload() {
+    const command = new PutObjectCommand({
+        Bucket: BUCKET,
+        Key: "test.txt",
+        Body: "Hello R2!"
+    });
+
+    await s3.send(command);
+    console.log("Uploaded test.txt");
+}
+
+export async function testRead() {
+    const command = new GetObjectCommand({
+        Bucket: BUCKET,
+        Key: "test.txt"
+    });
+
+    const response = await s3.send(command);
+    const text = await response.Body.transformToString();
+
+    console.log("Read from R2:", text);
+}
+
+testUpload();
+
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
