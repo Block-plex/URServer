@@ -2,7 +2,12 @@ const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
 
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+const {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand
+} = require("@aws-sdk/client-s3");
+
 
 const s3 = new S3Client({
     region: "auto",
