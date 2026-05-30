@@ -8,7 +8,6 @@ const {
   GetObjectCommand
 } = require("@aws-sdk/client-s3");
 
-
 const s3 = new S3Client({
     region: "auto",
     endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
@@ -17,8 +16,6 @@ const s3 = new S3Client({
         secretAccessKey: process.env.R2_SECRET_KEY
     }
 });
-
-const BUCKET = process.env.R2_BUCKET;
 
 async function testUpload() {
     const command = new PutObjectCommand({
@@ -30,6 +27,7 @@ async function testUpload() {
     await s3.send(command);
     console.log("Uploaded test.txt");
 }
+
 
 async function testRead() {
     const command = new GetObjectCommand({
