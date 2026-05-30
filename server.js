@@ -20,7 +20,7 @@ const s3 = new S3Client({
 
 const BUCKET = process.env.R2_BUCKET;
 
-export async function testUpload() {
+async function testUpload() {
     const command = new PutObjectCommand({
         Bucket: BUCKET,
         Key: "test.txt",
@@ -31,7 +31,7 @@ export async function testUpload() {
     console.log("Uploaded test.txt");
 }
 
-export async function testRead() {
+async function testRead() {
     const command = new GetObjectCommand({
         Bucket: BUCKET,
         Key: "test.txt"
