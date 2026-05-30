@@ -22,7 +22,7 @@ const BUCKET = process.env.R2_BUCKET;
 
 async function testUpload() {
     const command = new PutObjectCommand({
-        Bucket: BUCKET,
+        Bucket: "users",
         Key: "test.txt",
         Body: "Hello R2!"
     });
