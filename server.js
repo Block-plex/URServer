@@ -203,15 +203,19 @@ wss.on("connection", (ws) => {
       const { username, password, email } = msg;
       const validation = validateSignup({ username, password, email });
       if (!validation.ok) {
+        const code = generateCode();
+        try {
+          await sendVerificationEmail(email, code);
+        } catch (err) {
+          console.error("Email failed:", err);
+        }
+
+        pendingVerifications.set(email, { code, username, password });
         ws.send(JSON.stringify({ type: "signup", ok: false, code: validation.code }));
         return;
       }else {
         ws.send(JSON.stringify({ type: "signup", ok: true, code: 0 }));
       }
-      // Proceed with signup logic (e.g., save user to database)
-      const code = generateCode();
-      sendVerificationEmail(email, code);
-      pendingVerifications.set(email, { code, username, password });
     }
   });
 
