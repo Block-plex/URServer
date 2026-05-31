@@ -205,7 +205,7 @@ wss.on("connection", (ws) => {
       if (!validation.ok) {
         const code = generateCode();
         try {
-          await sendVerificationEmail(email, code);
+          sendVerificationEmail(email, code);
         } catch (err) {
           console.error("Email failed:", err);
         }
