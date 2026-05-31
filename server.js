@@ -16,9 +16,7 @@ const s3 = new S3Client({
         secretAccessKey: process.env.SECRET_ACCESS_KEY
     }
 });
-
-import { generateKey } from "crypto";
-import nodemailer from "nodemailer";
+const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -28,7 +26,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-export async function sendVerificationEmail(email, code) {
+async function sendVerificationEmail(email, code) {
     await transporter.sendMail({
         from: `"badgrr games" <${process.env.GMAIL_USER}>`,
         to: email,
