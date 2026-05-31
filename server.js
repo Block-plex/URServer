@@ -41,7 +41,55 @@ async function testRead() {
     console.log("Read from R2:", text);
 }
 
-testUpload();
+function validateSignup({ username, password, email }) {
+
+    // 8 — fields not filled in
+    if (!username || !password || !email) {
+        return { ok: false, code: 8 };
+    }
+
+    // 2 — email not valid at all
+    const emailFormat = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    if (!emailFormat.test(email)) {
+        return { ok: false, code: 2 };
+    }
+
+    // 1 — email is not Gmail
+    const gmailOnly = /^[A-Za-z0-9._%+-]+@gmail\.com$/;
+    if (!gmailOnly.test(email)) {
+        return { ok: false, code: 1 };
+    }
+
+    // 6 — username wrong length
+    if (username.length < 3 || username.length > 15) {
+        return { ok: false, code: 6 };
+    }
+
+    // 7 — username has spaces or unsupported symbols
+    const usernameRegex = /^[A-Za-z0-9_]+$/;
+    if (!usernameRegex.test(username)) {
+        return { ok: false, code: 7 };
+    }
+
+    // 3 — password wrong length
+    if (password.length < 8 || password.length > 20) {
+        return { ok: false, code: 3 };
+    }
+
+    // 4 — password has spaces
+    if (password.includes(" ")) {
+        return { ok: false, code: 4 };
+    }
+
+    // 5 — password too unsecure
+    const uniqueChars = new Set(password).size;
+    if (uniqueChars < 4) {
+        return { ok: false, code: 5 };
+    }
+
+    // 0 — wait for verify code
+    return { ok: true, code: 0 };
+}
 
 const app = express();
 const server = http.createServer(app);
@@ -119,6 +167,17 @@ wss.on("connection", (ws) => {
           break;
         }
       }
+    }
+    if(msg.type === "signup") {
+      const { username, password, email } = msg;
+      const validation = validateSignup({ username, password, email });
+      if (!validation.ok) {
+        ws.send(JSON.stringify({ type: "signup", ok: false, code: validation.code }));
+        return;
+      }else {
+        ws.send(JSON.stringify({ type: "signup", ok: true, code: 0 }));
+      }
+      // Proceed with signup logic (e.g., save user to database)
     }
   });
 
