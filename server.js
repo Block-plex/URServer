@@ -210,7 +210,7 @@ wss.on("connection", (ws) => {
       }
       // Proceed with signup logic (e.g., save user to database)
       const code = generateCode();
-      await sendVerificationEmail(email, code);
+      sendVerificationEmail(email, code);
       pendingVerifications.set(email, { code, username, password });
     }
   });
