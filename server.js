@@ -17,6 +17,37 @@ const s3 = new S3Client({
     }
 });
 
+import { generateKey } from "crypto";
+import nodemailer from "nodemailer";
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD
+    }
+});
+
+export async function sendVerificationEmail(email, code) {
+    await transporter.sendMail({
+        from: `"badgrr games" <${process.env.GMAIL_USER}>`,
+        to: email,
+        subject: "Your badgrr verification code!",
+        html: `
+        <div style="font-family: Verdana; margin: 10px; padding: 5px; border: 1px solid #ccc; text-align: center;">
+          <h1>Hi!</h1>
+          <hr>
+          <h3>Your one step away from starting your account. </h3>
+          <h2>Please enter this verification code in the website:</h2>
+          <h1><b>${code}</b></h1>
+          <hr>
+          <p>badgrr games</p>
+        </div>
+        `
+    });
+}
+
+
 async function testUpload() {
     const command = new PutObjectCommand({
         Bucket: "users",
@@ -101,6 +132,8 @@ let forumMessages = [];
 
 app.use(express.static("public"));
 
+const pendingVerifications = new Map();
+
 const players = new Map(); // id -> { x, y, ws }
 
 function broadcast(obj) {
@@ -178,6 +211,9 @@ wss.on("connection", (ws) => {
         ws.send(JSON.stringify({ type: "signup", ok: true, code: 0 }));
       }
       // Proceed with signup logic (e.g., save user to database)
+      const code = generateCode();
+      await sendVerificationEmail(email, code);
+      pendingVerifications.set(email, { code, username, password });
     }
   });
 
